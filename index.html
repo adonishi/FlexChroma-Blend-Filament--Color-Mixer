@@ -445,7 +445,7 @@ body {
                 <!-- ➕ 【追加】混色カーブ選択プルダウン -->
                 <div class="curve-selector-group" style="margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 8px;">
                     <label for="select-curve" style="display: block; font-size: 0.85rem; font-weight: bold; color: #4a5568; margin-bottom: 6px;">
-                        📈 混色カーブ補正 (視覚的グラデーション位置 ΔE00 に基づく)
+                        📈 混色カーブ補正
                     </label>
                     <select id="select-curve" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; font-size: 0.9rem;">
                         <option value="Auto" selected>Auto (自動)</option>
@@ -577,6 +577,28 @@ body {
 const JSON_URL = 'https://donkie.github.io/SpoolmanDB/filaments.json';
 const STORAGE_KEY = 'my_owned_filaments';
 
+// 📈 混色カーブ補正データ
+// 視覚的なグラデーション位置 (0%〜100%) に対応する、実際のフィラメントAの混色比率(%)
+const MIXING_CURVES = {
+    // Visual位置: [ 0%,  10%,  20%,  30%,  40%,  50%,  60%,  70%,  80%,  90%, 100%]
+    Neutral:  [0.0,  0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,  1.0],
+    Vivid:    [0.0,  0.04,  0.11,  0.24,  0.38,  0.53,  0.69,  0.81,  0.90,  0.95,  1.0],
+    Contrast: [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0],
+    Deep:     [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0]
+};
+
+// 各モデルに対応するダウンロードサイトのURLマップ（実際のURLに書き換えてください）
+const DOWNLOAD_URLS = {
+    'M1': 'https://makerworld.com/en/models/2742633-flexchroma-blend-filament-m1',
+    'M2': 'https://makerworld.com/en/models/2638560-flexchroma-blend-filament-m2',
+    'M3': 'https://makerworld.com/en/models/2703841-flexchroma-blend-filament-m4',
+    'M4': 'https://makerworld.com/en/models/2644430-flexchroma-blend-filament-m4',
+    'S1': 'https://makerworld.com/en/models/2740486-flexchroma-blend-filament-s1',
+    'S2': 'https://makerworld.com/en/models/2607360-flexchroma-blend-filament-s2',
+    'S3': 'https://makerworld.com/en/models/2671404-flexchroma-blend-filament-s3',
+    'S4': 'https://makerworld.com/en/models/2575708-flexchroma-blend-filament'
+};
+
 // グローバルにデータを保持する変数
 let filamentDatabase = [];
 
@@ -590,10 +612,14 @@ const btnAddQuick = document.getElementById('btn-add-quick'); // 追加ボタン
 const inputQuickName = document.getElementById('new-filament-name'); // 追加・名前
 const inputQuickColor = document.getElementById('new-filament-color'); // 追加・カラー
 const filamentList = document.getElementById('filament-list');
-
-// シミュレーター側のセレクトボックス
-const selectColorA = document.getElementById('select-color-a');
+const selectColorA = document.getElementById('select-color-a'); // シミュレーター側のセレクトボックス
 const selectColorB = document.getElementById('select-color-b');
+const ratioListBody = document.getElementById('ratio-list-body');
+const selectCurve = document.getElementById('select-curve'); // カーブ選択要素
+const mixerInfo = document.querySelector('.mixer-info');
+const selectModel = document.getElementById('select-model');
+const btnGenerate = document.getElementById('btn-generate');
+
 
 // 1. 初期化処理
 async function init() {
@@ -813,33 +839,13 @@ function updateMixerSelectors() {
 
     if(currentA) selectColorA.value = currentA;
     if(currentB) selectColorB.value = currentB;
-}
 
-// イベントリスナーの登録
-selectMaker.addEventListener('change', populateTypes);
-selectType.addEventListener('change', populateColorNames);
-selectColorName.addEventListener('change', syncColorPicker);
-btnAddDetailed.addEventListener('click', addFilamentFromDetails);
+    calculateColorMixing();         
+}
 
 // ==========================================
 // 🎨 リアルタイム混色シミュレーションロジック
 // ==========================================
-
-// ==========================================
-// 📈 混色カーブ補正データ (CSVから抽出)
-// ==========================================
-// 視覚的なグラデーション位置 (0%〜100%) に対応する、実際のフィラメントAの混色比率(%)
-const MIXING_CURVES = {
-    // Visual位置: [ 0%,  10%,  20%,  30%,  40%,  50%,  60%,  70%,  80%,  90%, 100%]
-    Neutral:  [0.0,  0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,  1.0],
-    Vivid:    [0.0,  0.04,  0.11,  0.24,  0.38,  0.53,  0.69,  0.81,  0.90,  0.95,  1.0],
-    Contrast: [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0],
-    Deep:     [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0]
-};
-
-const ratioListBody = document.getElementById('ratio-list-body');
-const selectCurve = document.getElementById('select-curve'); // カーブ選択要素
-const mixerInfo = document.querySelector('.mixer-info');
 
 // 色相差
 function calculateHueDifference(colorA, colorB) {
@@ -852,6 +858,7 @@ function calculateHueDifference(colorA, colorB) {
     return hueDiff;
 }
 
+// 'Auto'カーブ選択ロジック
 function calcCurve(currentCurve, hueDiff, lightnessDiff) {
     let curve = currentCurve;
     if (currentCurve === 'Auto') {
@@ -873,6 +880,7 @@ function calcCurve(currentCurve, hueDiff, lightnessDiff) {
     return curve;
 }
 
+// 混色比率リスト（10%刻み・11行）のHTMLを生成する関数
 function createMixingBarsHtml(colorA, colorB, curveData) {
     let html = '';
 
@@ -896,7 +904,6 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
                 <td class="ratio-text">
                     <strong>位置: ${visualProgressA}%</strong> : ${visualProgressB}%
                     <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
-                        (実際の押出比 A:${actualPercentA}% / B:${actualPercentB}%)
                     </span>
                 </td>
                 <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()}</code></td>
@@ -908,7 +915,7 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
 }
 
 /**
- * 中央の混色テーブル（10%刻み・11行）を再計算して描画するメイン関数
+ * 中央の混色テーブルを再計算して描画するメイン関数
  */
 function calculateColorMixing() {
     const valA = selectColorA.value;
@@ -945,41 +952,8 @@ function calculateColorMixing() {
 }
 
 // ==========================================
-// 🔄 既存の関数への割り込み・統合処理
-// ==========================================
-
-// 元々定義されているupdateMixerSelectorsの中身の最後に、テーブル更新処理を統合
-const originalUpdateMixerSelectors = updateMixerSelectors;
-updateMixerSelectors = function() {
-    originalUpdateMixerSelectors(); 
-    calculateColorMixing();         
-};
-
-// A、B、および新設した「混色カーブ」の選択が切り替えられたら再計算するイベントを登録
-selectColorA.addEventListener('change', calculateColorMixing);
-selectColorB.addEventListener('change', calculateColorMixing);
-if (selectCurve) {
-    selectCurve.addEventListener('change', calculateColorMixing);
-}
-
-// ==========================================
 // 📥 モデル別ダウンロードサイト遷移ロジック
 // ==========================================
-
-// 各モデルに対応するダウンロードサイトのURLマップ（実際のURLに書き換えてください）
-const DOWNLOAD_URLS = {
-    'M1': 'https://makerworld.com/en/models/2742633-flexchroma-blend-filament-m1',
-    'M2': 'https://makerworld.com/en/models/2638560-flexchroma-blend-filament-m2',
-    'M3': 'https://makerworld.com/en/models/2703841-flexchroma-blend-filament-m4',
-    'M4': 'https://makerworld.com/en/models/2644430-flexchroma-blend-filament-m4',
-    'S1': 'https://makerworld.com/en/models/2740486-flexchroma-blend-filament-s1',
-    'S2': 'https://makerworld.com/en/models/2607360-flexchroma-blend-filament-s2',
-    'S3': 'https://makerworld.com/en/models/2671404-flexchroma-blend-filament-s3',
-    'S4': 'https://makerworld.com/en/models/2575708-flexchroma-blend-filament'
-};
-
-const selectModel = document.getElementById('select-model');
-const btnGenerate = document.getElementById('btn-generate');
 
 /**
  * 選択されたモデルに応じたURLを別タブで開く関数
@@ -1006,10 +980,19 @@ function handleDownload() {
     }
 }
 
-// 右列のダウンロード（旧生成）ボタンにイベントを登録
-if (btnGenerate) {
-    btnGenerate.addEventListener('click', handleDownload);
-}
+// ==========================================
+// 🔄 既存の関数への割り込み・統合処理
+// ==========================================
+
+// イベントリスナーの登録
+selectMaker.addEventListener('change', populateTypes);
+selectType.addEventListener('change', populateColorNames);
+selectColorName.addEventListener('change', syncColorPicker);
+btnAddDetailed.addEventListener('click', addFilamentFromDetails);
+selectColorA.addEventListener('change', calculateColorMixing); // A、B、および新設した「混色カーブ」の選択が切り替えられたら再計算するイベントを登録
+selectColorB.addEventListener('change', calculateColorMixing);
+selectCurve.addEventListener('change', calculateColorMixing);
+btnGenerate.addEventListener('click', handleDownload); // 右列のダウンロード（旧生成）ボタンにイベントを登録
 
 // 起動
 init();
