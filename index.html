@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexChroma Blend Filament Color Mixer</title>
+     <style>
+        /* 全体設定 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* ヘッダー */
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.app-header h1 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.app-header p {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+
+/* 3カラムレイアウト構成 */
+.app-container {
+    display: flex;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 各列の幅比率調整（中央を少し広く） */
+.left-column { flex: 0.8; }
+.center-column { flex: 1.4; }
+.right-column { flex: 0.8; }
+
+/* カードデザイン */
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e1e8ed;
+}
+
+.card h2 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #f1f3f5;
+    padding-bottom: 8px;
+}
+
+.info-card {
+    background-color: #eef2f7;
+    border: none;
+}
+.info-card h3 {
+    font-size: 1rem;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+.info-card ol {
+    padding-left: 20px;
+    font-size: 0.85rem;
+    color: #555;
+}
+.info-card li {
+    margin-bottom: 5px;
+}
+
+/* フォーム部品 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #4a5568;
+}
+
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input-with-unit input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-with-unit input:focus {
+    border-color: #3182ce;
+}
+
+.input-with-unit .unit {
+    position: absolute;
+    right: 15px;
+    font-weight: bold;
+    color: #718096;
+}
+
+/* ボタン */
+.btn-primary {
+    width: 100%;
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-secondary {
+    background-color: #4a5568;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background-color: #2d3748;
+}
+
+/* 中央：ミキサー選択部分 */
+.mixer-selectors {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.selector-box {
+    flex: 1;
+}
+
+.selector-box label {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.selector-box select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background-color: white;
+}
+
+.mixer-vs {
+    font-weight: bold;
+    color: #94a3b8;
+    padding-top: 15px;
+}
+
+/* 中央：比率テーブル */
+.ratio-table-wrapper {
+    overflow-x: auto;
+}
+
+.ratio-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.ratio-table th, .ratio-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ratio-table th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+}
+
+.ratio-text {
+    font-variant-numeric: tabular-nums;
+}
+
+.rgb-text code {
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.color-preview {
+    width: 100%;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 右側：フィラメント追加フォーム */
+.add-filament-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.add-filament-form input[type="text"] {
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    width: 100%;
+}
+
+.color-picker-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.color-picker-group input[type="color"] {
+    flex: 1;
+    height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    background: white;
+    padding: 2px;
+}
+
+/* 右側：フィラメントリスト一覧 */
+.filament-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filament-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.filament-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.filament-name {
+    font-size: 0.9rem;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.btn-delete:hover {
+    background-color: #fee2e2;
+}
+
+/* レスポンシブ対応（画面が狭いときは1列に落とす） */
+@media (max-width: 1024px) {
+    .app-container {
+        flex-direction: column;
+    }
+    .column {
+        width: 100%;
+    }
+}
+
+     </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>🎨 FlexChroma Blend Filament Color Mixer</h1>
+        <p>2つのフィラメントを混ぜ合わせたときの色と比率を計算します</p>
+    </header>
+
+    <main class="app-container">
+        
+        <!-- 左カラム：フィラメントのリストと追加（旧：右カラム） -->
+        <section class="column left-column">
+            <!-- 所持フィラメント一覧 -->
+            <div class="card">
+                <h2>1. 所持フィラメント</h2>
+                <ul class="filament-list" id="filament-list">
+                </ul>
+            <!-- </div> -->
+
+            <!-- 追加方法1：クイック追加 -->
+            <!-- <div class="card"> -->
+                <br/>
+                <h4>➕ クイック追加</h4>
+                <div class="add-filament-form compact">
+                    <input type="text" id="new-filament-name" placeholder="フィラメント名 (例: PLA Red)">
+                    <div class="color-picker-group">
+                        <input type="color" id="new-filament-color" value="#ff0000">
+                        <button type="button" class="btn-secondary" id="btn-add-quick">追加</button>
+                    </div>
+                </div>
+            <!-- </div> -->
+
+            <!-- 追加方法2：詳細追加（すべてプルダウン化） -->
+            <!-- <div class="card"> -->
+                <h4>📝 所持フィラメントを詳細追加</h4>
+                <div class="add-filament-form detailed">
+                    <h6 style="color: #718096"><a href="https://github.com/Donkie/SpoolmanDB" target="_blank">SpoolmanDB</a>のデータを使用</h6>
+                    <div class="form-group-sub selector-box">
+                        <label for="detail-maker">メーカー名</label>
+                        <select id="detail-maker">
+                            <option value="eSUN">eSUN</option>
+                            <option value="Prusament">Prusament</option>
+                            <option value="Bambu Lab">Bambu Lab</option>
+                            <option value="PolyMaker">PolyMaker</option>
+                            <option value="Creality">Creality</option>
+                        </select>
+                    </div>
+                    <div class="form-group-sub selector-box">
+                        <label for="detail-type">フィラメント種類</label>
+                        <select id="detail-type">
+                            <option value="PLA">PLA</option>
+                            <option value="PETG">PETG</option>
+                            <option value="ABS">ABS</option>
+                            <option value="TPU">TPU</option>
+                        </select>
+                    </div>
+                    <div class="form-group-sub selector-box">
+                        <label for="detail-color-name">色名</label>
+                        <select id="detail-color-name">
+                            <option value="Red">Red (レッド)</option>
+                            <option value="Blue">Blue (ブルー)</option>
+                            <option value="Yellow">Yellow (イエロー)</option>
+                            <option value="White">White (ホワイト)</option>
+                            <option value="Black">Black (ブラック)</option>
+                            <option value="Green">Green (グリーン)</option>
+                        </select>
+                    </div>
+                    <div class="form-group-sub">
+                        <label for="detail-color">実際の色</label>
+                        <div class="color-picker-group">
+                            <input type="color" id="detail-color" value="#3182ce">
+                            <button type="button" class="btn-secondary" id="btn-add-detailed">詳細データで追加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+        </section>
+
+        <!-- 中央カラム：混色比率リスト（据え置き） -->
+        <section class="column center-column">
+            <div class="card">
+                <h2>2. 混色シミュレーション</h2>
+                
+                <!-- フィラメント選択エリア -->
+                <div class="mixer-selectors">
+                    <div class="selector-box">
+                        <label for="select-color-a">フィラメント A (薄め)</label>
+                        <select id="select-color-a">
+                        </select>
+                    </div>
+                    <div class="mixer-vs">×</div>
+                    <div class="selector-box">
+                        <label for="select-color-b">フィラメント B (濃いめ)</label>
+                        <select id="select-color-b">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ➕ 【追加】混色カーブ選択プルダウン -->
+                <div class="curve-selector-group" style="margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 8px;">
+                    <label for="select-curve" style="display: block; font-size: 0.85rem; font-weight: bold; color: #4a5568; margin-bottom: 6px;">
+                        📈 混色カーブ補正 (視覚的グラデーション位置 ΔE00 に基づく)
+                    </label>
+                    <select id="select-curve" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; font-size: 0.9rem;">
+                        <option value="Neutral">Neutral (標準・均等ブレンド)</option>
+                        <option value="Vivid">Vivid (鮮やかさ重視)</option>
+                        <option value="Contrast">Contrast (コントラスト強調)</option>
+                        <option value="Deep">Deep (深み・暗色維持)</option>
+                    </select>
+                </div>
+
+                <!-- 10段階の比率リスト -->
+                <div class="ratio-table-wrapper">
+
+                <div class="ratio-table-wrapper">
+                    <table class="ratio-table">
+                        <thead>
+                            <tr>
+                                <th>比率 (A : B)</th>
+                                <th>RGB値</th>
+                                <th>仕上がり色</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratio-list-body">
+                            <tr>
+                                <td class="ratio-text"><strong>100%</strong> : 0%</td>
+                                <td class="rgb-text"><code>rgb(255, 0, 0)</code></td>
+                                <td><div class="color-preview" style="background-color: #ff0000;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>90%</strong> : 10%</td>
+                                <td class="rgb-text"><code>rgb(230, 0, 26)</code></td>
+                                <td><div class="color-preview" style="background-color: #e6001a;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>80%</strong> : 20%</td>
+                                <td class="rgb-text"><code>rgb(204, 0, 51)</code></td>
+                                <td><div class="color-preview" style="background-color: #cc0033;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>70%</strong> : 30%</td>
+                                <td class="rgb-text"><code>rgb(179, 0, 77)</code></td>
+                                <td><div class="color-preview" style="background-color: #b3004d;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>60%</strong> : 40%</td>
+                                <td class="rgb-text"><code>rgb(153, 0, 102)</code></td>
+                                <td><div class="color-preview" style="background-color: #990066;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>50%</strong> : 50%</td>
+                                <td class="rgb-text"><code>rgb(128, 0, 128)</code></td>
+                                <td><div class="color-preview" style="background-color: #800080;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>40%</strong> : 60%</td>
+                                <td class="rgb-text"><code>rgb(102, 0, 153)</code></td>
+                                <td><div class="color-preview" style="background-color: #660099;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>30%</strong> : 70%</td>
+                                <td class="rgb-text"><code>rgb(77, 0, 179)</code></td>
+                                <td><div class="color-preview" style="background-color: #4d00b3;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>20%</strong> : 80%</td>
+                                <td class="rgb-text"><code>rgb(51, 0, 204)</code></td>
+                                <td><div class="color-preview" style="background-color: #3300cc;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text"><strong>10%</strong> : 90%</td>
+                                <td class="rgb-text"><code>rgb(26, 0, 230)</code></td>
+                                <td><div class="color-preview" style="background-color: #1a00e6;"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="ratio-text">0% : <strong>100%</strong></td>
+                                <td class="rgb-text"><code>rgb(0, 0, 255)</code></td>
+                                <td><div class="color-preview" style="background-color: #0000ff;"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右カラム：設定と出力 -->
+        <section class="column right-column">
+            <div class="card">
+                <h2>3. FlexChroma モデル・ダウンロード</h2>
+                
+                <!-- 🔄 長さ指定をやめて、モデル選択プルダウンに変更 -->
+                <div class="form-group">
+                    <label for="select-model">対象フィラメントモデルの選択</label>
+                    <select id="select-model" style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; font-size: 1rem; outline: none; background-color: white;">
+                        <option value="">-- モデルを選択してください --</option>
+                        <optgroup label="Mシリーズ (対応ベッドサイズ: Over 256 x 256)">
+                            <option value="M1">M1 Series (24m / 73g)</option>
+                            <option value="M2">M2 Series (21.0m / 63g)</option>
+                            <option value="M3">M3 Series (18.0m / 53g)</option>
+                            <option value="M4">M4 Series (15.0m / 43g)</option>
+                        </optgroup>
+                        <optgroup label="Sシリーズ (対応ベッドサイズ: Over 180 x 180)">
+                            <option value="S1">S1 Series (11m / 33g)</option>
+                            <option value="S2">S2 Series (9m / 26g)</option>
+                            <option value="S3">S3 Series (6m / 19g)</option>
+                            <option value="S4">S4 Series (4m / 12g)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <!-- ボタンの文言を「ダウンロード」に変更 -->
+                <button type="button" class="btn-primary" id="btn-generate">ダウンロード・ページを開く</button>
+            </div>
+            
+            <div class="card info-card">
+                <h3>💡 使い方</h3>
+                <ol>
+                    <li>左列で所持フィラメントを管理・追加</li>
+                    <li>中央列で混ぜる2色と混色カーブを選択し、欲しい混色比率を確認</li>
+                    <li>右列でモデルを選択してダウンロード・ページを開く</li>
+                    <li>確認した混色比率に対応する、3MFファイルをダウンロード</li>
+                </ol>
+            </div>
+        </section>
+    
+    </main>
+    <script>
+// SpoolmanDBの統合JSONのURL
+const JSON_URL = 'https://donkie.github.io/SpoolmanDB/filaments.json';
+const STORAGE_KEY = 'my_owned_filaments';
+
+// グローバルにデータを保持する変数
+let filamentDatabase = [];
+
+// DOM要素の取得
+const selectMaker = document.getElementById('detail-maker');
+const selectType = document.getElementById('detail-type');
+const selectColorName = document.getElementById('detail-color-name');
+const inputColor = document.getElementById('detail-color');
+const btnAddDetailed = document.getElementById('btn-add-detailed');
+const btnAddQuick = document.getElementById('btn-add-quick'); // クイック追加ボタン
+const inputQuickName = document.getElementById('new-filament-name'); // クイック追加入力
+const inputQuickColor = document.getElementById('new-filament-color'); // クイック追加カラー
+const filamentList = document.getElementById('filament-list');
+
+// シミュレーター側のセレクトボックス
+const selectColorA = document.getElementById('select-color-a');
+const selectColorB = document.getElementById('select-color-b');
+
+// 1. 初期化処理
+async function init() {
+    // まずLocalStorageからデータを読み込んでリストを表示
+    loadFilamentsFromStorage();
+
+    try {
+        setSelectPlaceholder(selectMaker, 'データ読み込み中...');
+        const response = await fetch(JSON_URL);
+        if (!response.ok) throw new Error('ネットワークエラーが発生しました。');
+        filamentDatabase = (await response.json()).filter(
+            f => f.diameter === 1.75); // 1.75mmのフィラメントに絞る
+        populateMakers();
+    } catch (error) {
+        console.error('データの取得に失敗しました:', error);
+        setSelectPlaceholder(selectMaker, 'データの読み込みに失敗しました');
+    }
+}
+
+// 共通：セレクトボックスを初期化するヘルパー
+function setSelectPlaceholder(selectElement, text) {
+    selectElement.innerHTML = `<option value="">-- ${text} --</option>`;
+}
+
+// 2. メーカープルダウンの生成
+function populateMakers() {
+    const makers = [...new Set(filamentDatabase.map(f => f.manufacturer))].sort();
+    selectMaker.innerHTML = '<option value="">選択してください</option>';
+    makers.forEach(maker => {
+        if(maker) {
+            const option = document.createElement('option');
+            option.value = maker;
+            option.textContent = maker;
+            selectMaker.appendChild(option);
+        }
+    });
+    setSelectPlaceholder(selectType, 'メーカーを先に選択');
+    setSelectPlaceholder(selectColorName, '種類を先に選択');
+}
+
+// 3. 種類（マテリアル）プルダウンの生成
+function populateTypes() {
+    const selectedMaker = selectMaker.value;
+    if (!selectedMaker) {
+        setSelectPlaceholder(selectType, 'メーカーを先に選択');
+        setSelectPlaceholder(selectColorName, '種類を先に選択');
+        return;
+    }
+    const filtered = filamentDatabase.filter(f => f.manufacturer === selectedMaker);
+    const types = [...new Set(filtered.map(f => f.material))].sort();
+
+    selectType.innerHTML = '<option value="">選択してください</option>';
+    types.forEach(type => {
+        if(type) {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            selectType.appendChild(option);
+        }
+    });
+    setSelectPlaceholder(selectColorName, '種類を先に選択');
+}
+
+// 4. 色名プルダウンの生成
+function populateColorNames() {
+    const selectedMaker = selectMaker.value;
+    const selectedType = selectType.value;
+    if (!selectedMaker || !selectedType) {
+        setSelectPlaceholder(selectColorName, '種類を先に選択');
+        return;
+    }
+    const filtered = filamentDatabase.filter(f => 
+        f.manufacturer === selectedMaker && f.material === selectedType
+    );
+
+    selectColorName.innerHTML = '<option value="">選択してください</option>';
+    filtered.forEach(item => {
+        if(item.name) {
+            const option = document.createElement('option');
+            option.value = item.color_hex ? `#${item.color_hex}` : '#ffffff';
+            option.textContent = item.name;
+            selectColorName.appendChild(option);
+        }
+    });
+}
+
+// 5. カラーピッカーの自動同期
+function syncColorPicker() {
+    const selectedColorHex = selectColorName.value;
+    if (selectedColorHex && selectedColorHex.startsWith('#')) {
+        inputColor.value = selectedColorHex.toLowerCase();
+    }
+}
+
+// 6. 画面にフィラメント要素を追加する共通関数
+function appendFilamentDOM(name, colorHex) {
+    const li = document.createElement('li');
+    li.className = 'filament-item';
+    // データ属性として保持（Storage保存用）
+    li.dataset.name = name;
+    li.dataset.color = colorHex;
+
+    li.innerHTML = `
+        <div class="filament-info">
+            <span class="color-dot" style="background-color: ${colorHex};"></span>
+            <span class="filament-name">${name}</span>
+        </div>
+        <button class="btn-delete" title="削除">&times;</button>
+    `;
+
+    // 削除ボタンの処理
+    li.querySelector('.btn-delete').addEventListener('click', () => {
+        li.remove();          // 画面から削除
+        saveFilamentsToStorage(); // LocalStorageを最新状態に更新
+        updateMixerSelectors();  // 中央のセレクトボックスを更新
+    });
+
+    filamentList.appendChild(li);
+}
+
+// 7. 「詳細データで追加」ボタン処理
+function addFilamentFromDetails() {
+    const maker = selectMaker.value;
+    const type = selectType.value;
+    const colorName = selectColorName.options[selectColorName.selectedIndex]?.text;
+    const colorHex = inputColor.value;
+
+    if (!maker || !type || !selectColorName.value) {
+        alert('すべての項目を選択してください。');
+        return;
+    }
+
+    const fullName = `${maker} ${type} ${colorName}`;
+    appendFilamentDOM(fullName, colorHex);
+    
+    saveFilamentsToStorage(); // 保存
+    updateMixerSelectors();   // 同期
+    selectColorName.selectedIndex = 0; // リセット
+}
+
+// 8. クイック追加ボタンの処理
+if (btnAddQuick) {
+    btnAddQuick.addEventListener('click', () => {
+        const name = inputQuickName.value.trim();
+        const color = inputQuickColor.value;
+        if (!name) {
+            alert('フィラメント名を入力してください。');
+            return;
+        }
+        appendFilamentDOM(name, color);
+        saveFilamentsToStorage();
+        updateMixerSelectors();
+        inputQuickName.value = '';
+    });
+}
+
+// 9. 💾 LocalStorageへの保存処理
+function saveFilamentsToStorage() {
+    const items = filamentList.querySelectorAll('.filament-item');
+    const filamentData = [];
+
+    items.forEach(item => {
+        filamentData.push({
+            name: item.dataset.name,
+            color: item.dataset.color
+        });
+    });
+
+    // 配列をJSON文字列に変換してLocalStorageに保存
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filamentData));
+}
+
+// 10. 💾 LocalStorageからの読み込み処理
+function loadFilamentsFromStorage() {
+    filamentList.innerHTML = ''; // 既存の静的モックデータをクリア
+    
+    const storedData = localStorage.getItem(STORAGE_KEY);
+
+    if (storedData) {
+        try {
+            const filamentData = JSON.parse(storedData);
+
+            if (Array.isArray(filamentData)) {
+                filamentData.forEach(item => {
+                    appendFilamentDOM(item.name, item.color);
+                });
+            }
+        } catch (e) {
+            console.error('LocalStorageのデータ解析に失敗しました:', e);
+        }
+    }
+
+    // 中央セレクトボックスの初期同期
+    updateMixerSelectors();
+}
+
+// 11. 中央シミュレーターの同期
+function updateMixerSelectors() {
+    const items = filamentList.querySelectorAll('.filament-item');
+    let optionsHtml = '';
+
+    items.forEach(item => {
+        const name = item.dataset.name;
+        const color = item.dataset.color;
+        optionsHtml += `<option value="${color}">${name}</option>`;
+    });
+
+    if (items.length === 0) {
+        optionsHtml = '<option value="">フィラメントを追加してください</option>';
+    }
+
+    const currentA = selectColorA.value;
+    const currentB = selectColorB.value;
+
+    selectColorA.innerHTML = optionsHtml;
+    selectColorB.innerHTML = optionsHtml;
+
+    if(currentA) selectColorA.value = currentA;
+    if(currentB) selectColorB.value = currentB;
+}
+
+// イベントリスナーの登録
+selectMaker.addEventListener('change', populateTypes);
+selectType.addEventListener('change', populateColorNames);
+selectColorName.addEventListener('change', syncColorPicker);
+btnAddDetailed.addEventListener('click', addFilamentFromDetails);
+
+// ==========================================
+// 🎨 リアルタイム混色シミュレーションロジック
+// ==========================================
+
+// ==========================================
+// 📈 混色カーブ補正データ (CSVから抽出)
+// ==========================================
+// 視覚的なグラデーション位置 (0%〜100%) に対応する、実際のフィラメントAの混色比率(%)
+const MIXING_CURVES = {
+    // Visual位置: [ 0%,  10%,  20%,  30%,  40%,  50%,  60%,  70%,  80%,  90%, 100%]
+    Neutral:  [0.0,  0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,  1.0],
+    Vivid:    [0.0,  0.04,  0.11,  0.24,  0.38,  0.53,  0.69,  0.81,  0.90,  0.95,  1.0],
+    Contrast: [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0],
+    Deep:     [0.0,  0.01,  0.02,  0.04,  0.08,  0.15,  0.24,  0.36,  0.53,  0.75,  1.0]
+};
+
+const ratioListBody = document.getElementById('ratio-list-body');
+const selectCurve = document.getElementById('select-curve'); // カーブ選択要素
+
+/**
+ * Hexカラーコード（#ffffff または #fff）をRGBオブジェクトに変換する関数
+ */
+function hexToRgb(hex) {
+    if (hex.startsWith('rgb')) {
+        const rgbValues = hex.match(/\d+/g).map(Number);
+        return { r: rgbValues[0], g: rgbValues[1], b: rgbValues[2] };
+    }
+    let c = hex.substring(1);
+    if (c.length === 3) {
+        c = c.split('').map(x => x + x).join('');
+    }
+    const num = parseInt(c, 16);
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
+/**
+ * RGBオブジェクトをHexカラーコードに変換する関数
+ */
+function rgbToHex(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+/**
+ * 2つの色を指定された比率で線形補間（ブレンド）する関数
+ * @param {Object} colorA - {r, g, b}
+ * @param {Object} colorB - {r, g, b}
+ * @param {number} ratioA - 0.0 〜 1.0 (Aの実際の混色比率)
+ */
+function blendColors(colorA, colorB, ratioA) {
+    const ratioB = 1 - ratioA;
+    return {
+        r: Math.max(0, Math.min(255, Math.round(colorA.r * ratioA + colorB.r * ratioB))),
+        g: Math.max(0, Math.min(255, Math.round(colorA.g * ratioA + colorB.g * ratioB))),
+        b: Math.max(0, Math.min(255, Math.round(colorA.b * ratioA + colorB.b * ratioB)))
+    };
+}
+
+/**
+ * 中央の混色テーブル（10%刻み・11行）を再計算して描画するメイン関数
+ */
+function calculateColorMixing() {
+    const valA = selectColorA.value;
+    const valB = selectColorB.value;
+    const currentCurve = selectCurve ? selectCurve.value : 'Neutral'; // 選択されたカーブ名
+
+    // どちらかのフィラメントが選択されていない場合は待機案内を表示
+    if (!valA || !valB || valA.includes('追加してください') || valB.includes('追加してください')) {
+        ratioListBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">左列からフィラメントを追加して選択してください</td></tr>`;
+        return;
+    }
+
+    const rgbA = hexToRgb(valA);
+    const rgbB = hexToRgb(valB);
+
+    // 選択されたカーブの配列データを取得
+    const curveData = MIXING_CURVES[currentCurve] || MIXING_CURVES['Neutral'];
+
+    let html = '';
+
+    // 視覚的なグラデーション位置 100% から 0% まで 10% 刻みでループ処理 (計11段階)
+    // 配列のインデックス（10 から 0）に対応
+    for (let i = 10; i >= 0; i--) {
+        const visualProgressA = i * 10;           // 画面に表示する「見た目のグラデーション位置A %」
+        const visualProgressB = 100 - visualProgressA; // 「見た目のグラデーション位置B %」
+        
+        // 📊 CSVデータに基づいて、見た目の位置に対応する「実際の物理的な混色比率」をルックアップ
+        const actualRatioA = curveData[i]; 
+        const actualPercentA = Math.round(actualRatioA * 100);
+        const actualPercentB = 100 - actualPercentA;
+
+        // 実際のフィラメント混色比率を元にRGBをブレンド
+        const blended = blendColors(rgbA, rgbB, actualRatioA);
+        const rgbText = `rgb(${blended.r}, ${blended.g}, ${blended.b})`;
+        const hexColor = rgbToHex(blended.r, blended.g, blended.b);
+
+        // 各行のHTMLテンプレート（比率の表示を「見た目」と「実際の送り出し比率」がわかるようにリッチ化）
+        html += `
+            <tr>
+                <td class="ratio-text">
+                    <strong>位置: ${visualProgressA}%</strong> : ${visualProgressB}%
+                    <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
+                        (実際の押出比 A:${actualPercentA}% / B:${actualPercentB}%)
+                    </span>
+                </td>
+                <td class="rgb-text" style="vertical-align: middle;"><code>${rgbText}</code></td>
+                <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${hexColor};"></div></td>
+            </tr>
+        `;
+    }
+
+    // テーブルのボディ部分を書き換え
+    ratioListBody.innerHTML = html;
+}
+
+// ==========================================
+// 🔄 既存の関数への割り込み・統合処理
+// ==========================================
+
+// 元々定義されているupdateMixerSelectorsの中身の最後に、テーブル更新処理を統合
+const originalUpdateMixerSelectors = updateMixerSelectors;
+updateMixerSelectors = function() {
+    originalUpdateMixerSelectors(); 
+    calculateColorMixing();         
+};
+
+// A、B、および新設した「混色カーブ」の選択が切り替えられたら再計算するイベントを登録
+selectColorA.addEventListener('change', calculateColorMixing);
+selectColorB.addEventListener('change', calculateColorMixing);
+if (selectCurve) {
+    selectCurve.addEventListener('change', calculateColorMixing);
+}
+
+// ==========================================
+// 📥 モデル別ダウンロードサイト遷移ロジック
+// ==========================================
+
+// 各モデルに対応するダウンロードサイトのURLマップ（実際のURLに書き換えてください）
+const DOWNLOAD_URLS = {
+    'M1': 'https://makerworld.com/en/models/2742633-flexchroma-blend-filament-m1',
+    'M2': 'https://makerworld.com/en/models/2638560-flexchroma-blend-filament-m2',
+    'M3': 'https://makerworld.com/en/models/2703841-flexchroma-blend-filament-m4',
+    'M4': 'https://makerworld.com/en/models/2644430-flexchroma-blend-filament-m4',
+    'S1': 'https://makerworld.com/en/models/2740486-flexchroma-blend-filament-s1',
+    'S2': 'https://makerworld.com/en/models/2607360-flexchroma-blend-filament-s2',
+    'S3': 'https://makerworld.com/en/models/2671404-flexchroma-blend-filament-s3',
+    'S4': 'https://makerworld.com/en/models/2575708-flexchroma-blend-filament'
+};
+
+const selectModel = document.getElementById('select-model');
+const btnGenerate = document.getElementById('btn-generate');
+
+/**
+ * 選択されたモデルに応じたURLを別タブで開く関数
+ */
+function handleDownload() {
+    if (!selectModel) return;
+
+    const selectedModel = selectModel.value;
+
+    // モデルが選択されていない場合はアラートを出す
+    if (!selectedModel) {
+        alert('出力設定でフィラメントモデル（M1〜M4, S1〜S4）を選択してください。');
+        return;
+    }
+
+    // 対応するURLを取得
+    const targetUrl = DOWNLOAD_URLS[selectedModel];
+
+    if (targetUrl) {
+        // 🌐 window.open の第二引数に '_blank' を指定して別タブで開く
+        window.open(targetUrl, '_blank');
+    } else {
+        alert('該当モデルのダウンロードURLが見つかりませんでした。');
+    }
+}
+
+// 右列のダウンロード（旧生成）ボタンにイベントを登録
+if (btnGenerate) {
+    btnGenerate.addEventListener('click', handleDownload);
+}
+
+// 起動
+init();
+calculateColorMixing();
+
+    </script></body>
+</html>
