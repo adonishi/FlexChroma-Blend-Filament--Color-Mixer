@@ -430,13 +430,13 @@ body {
                 <!-- フィラメント選択エリア -->
                 <div class="mixer-selectors">
                     <div class="selector-box">
-                        <label for="select-color-a">フィラメント A (薄め)</label>
+                        <label for="select-color-a"><span class="color-dot filament-a-color-dot" style="background-color: #FFFFFF;"></span> フィラメント A (薄め)</label>
                         <select id="select-color-a">
                         </select>
                     </div>
                     <div class="mixer-vs">×</div>
                     <div class="selector-box">
-                        <label for="select-color-b">フィラメント B (濃いめ)</label>
+                        <label for="select-color-b"><span class="color-dot filament-b-color-dot" style="background-color: #FFFFFF;"></span> フィラメント B (濃いめ)</label>
                         <select id="select-color-b">
                         </select>
                     </div>
@@ -615,6 +615,8 @@ const filamentList = document.getElementById('filament-list');
 const selectColorA = document.getElementById('select-color-a'); // シミュレーター側のセレクトボックス
 const selectColorB = document.getElementById('select-color-b');
 const ratioListBody = document.getElementById('ratio-list-body');
+const filamentAColorDot = document.querySelector('.filament-a-color-dot');
+const filamentBColorDot = document.querySelector('.filament-b-color-dot');
 const selectCurve = document.getElementById('select-curve'); // カーブ選択要素
 const mixerInfo = document.querySelector('.mixer-info');
 const selectModel = document.getElementById('select-model');
@@ -944,11 +946,11 @@ function calculateColorMixing() {
             色相差: ${hueDiff.toFixed(1)}° | 明度差: ${lightnessDiff.toFixed(1)} ${currentCurve === 'Auto' ? '| 選択カーブ: ' + curve : ''}
         </p>
     `;
-
-    const html = createMixingBarsHtml(colorA, colorB, curveData);
+    filamentAColorDot.style.backgroundColor = colorA.hex();
+    filamentBColorDot.style.backgroundColor = colorB.hex();
 
     // テーブルのボディ部分を書き換え
-    ratioListBody.innerHTML = html;
+    ratioListBody.innerHTML = createMixingBarsHtml(colorA, colorB, curveData);;
 }
 
 // ==========================================
