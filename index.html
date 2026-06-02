@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlexChroma Blend Filament Color Mixer</title>
+    <!-- chroma.js の読み込み（軽量なフロントエンド向けCDN） -->
+    <script src="https://unpkg.com/chroma-js/dist/chroma.min.cjs"></script>
      <style>
         /* 全体設定 */
 * {
@@ -856,27 +858,6 @@ function hexToRgb(hex) {
     };
 }
 
-/**
- * RGBオブジェクトをHexカラーコードに変換する関数
- */
-function rgbToHex(r, g, b) {
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-/**
- * 2つの色を指定された比率で線形補間（ブレンド）する関数
- * @param {Object} colorA - {r, g, b}
- * @param {Object} colorB - {r, g, b}
- * @param {number} ratioA - 0.0 〜 1.0 (Aの実際の混色比率)
- */
-function blendColors(colorA, colorB, ratioA) {
-    const ratioB = 1 - ratioA;
-    return {
-        r: Math.max(0, Math.min(255, Math.round(colorA.r * ratioA + colorB.r * ratioB))),
-        g: Math.max(0, Math.min(255, Math.round(colorA.g * ratioA + colorB.g * ratioB))),
-        b: Math.max(0, Math.min(255, Math.round(colorA.b * ratioA + colorB.b * ratioB)))
-    };
-}
 
 /**
  * 中央の混色テーブル（10%刻み・11行）を再計算して描画するメイン関数
@@ -892,8 +873,10 @@ function calculateColorMixing() {
         return;
     }
 
-    const rgbA = hexToRgb(valA);
-    const rgbB = hexToRgb(valB);
+    const colorA = chroma(valA);
+    const colorB = chroma(valB);
+    const rgbA = { r: colorA.get('rgb.r'), g: colorA.get('rgb.g'), b: colorA.get('rgb.b') };
+    const rgbB = { r: colorB.get('rgb.r'), g: colorB.get('rgb.g'), b: colorB.get('rgb.b') };
 
     // 選択されたカーブの配列データを取得
     const curveData = MIXING_CURVES[currentCurve] || MIXING_CURVES['Neutral'];
@@ -912,9 +895,7 @@ function calculateColorMixing() {
         const actualPercentB = 100 - actualPercentA;
 
         // 実際のフィラメント混色比率を元にRGBをブレンド
-        const blended = blendColors(rgbA, rgbB, actualRatioA);
-        const rgbText = `rgb(${blended.r}, ${blended.g}, ${blended.b})`;
-        const hexColor = rgbToHex(blended.r, blended.g, blended.b);
+        const blended = colorA.mix(colorB, actualPercentB/100.0, 'rgb');
 
         // 各行のHTMLテンプレート（比率の表示を「見た目」と「実際の送り出し比率」がわかるようにリッチ化）
         html += `
@@ -925,8 +906,8 @@ function calculateColorMixing() {
                         (実際の押出比 A:${actualPercentA}% / B:${actualPercentB}%)
                     </span>
                 </td>
-                <td class="rgb-text" style="vertical-align: middle;"><code>${rgbText}</code></td>
-                <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${hexColor};"></div></td>
+                <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()}</code></td>
+                <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${blended.hex()};"></div></td>
             </tr>
         `;
     }
