@@ -361,10 +361,10 @@ body {
                 </ul>
             <!-- </div> -->
 
-            <!-- 追加方法1：クイック追加 -->
+            <!-- 追加方法1：追加 -->
             <!-- <div class="card"> -->
                 <br/>
-                <h4>➕ クイック追加</h4>
+                <h4>➕ 追加</h4>
                 <div class="add-filament-form compact">
                     <input type="text" id="new-filament-name" placeholder="フィラメント名 (例: PLA Red)">
                     <div class="color-picker-group">
@@ -374,9 +374,9 @@ body {
                 </div>
             <!-- </div> -->
 
-            <!-- 追加方法2：詳細追加（すべてプルダウン化） -->
+            <!-- 追加方法2：DBから追加 -->
             <!-- <div class="card"> -->
-                <h4>📝 所持フィラメントを詳細追加</h4>
+                <h4>➕ DBから追加</h4>
                 <div class="add-filament-form detailed">
                     <h6 style="color: #718096"><a href="https://github.com/Donkie/SpoolmanDB" target="_blank">SpoolmanDB</a>のデータを使用</h6>
                     <div class="form-group-sub selector-box">
@@ -413,7 +413,7 @@ body {
                         <label for="detail-color">実際の色</label>
                         <div class="color-picker-group">
                             <input type="color" id="detail-color" value="#3182ce">
-                            <button type="button" class="btn-secondary" id="btn-add-detailed">詳細データで追加</button>
+                            <button type="button" class="btn-secondary" id="btn-add-detailed">DBから追加</button>
                         </div>
                     </div>
                 </div>
@@ -448,11 +448,13 @@ body {
                         📈 混色カーブ補正 (視覚的グラデーション位置 ΔE00 に基づく)
                     </label>
                     <select id="select-curve" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; font-size: 0.9rem;">
+                        <option value="Auto" selected>Auto (自動)</option>
                         <option value="Neutral">Neutral (標準・均等ブレンド)</option>
                         <option value="Vivid">Vivid (鮮やかさ重視)</option>
                         <option value="Contrast">Contrast (コントラスト強調)</option>
                         <option value="Deep">Deep (深み・暗色維持)</option>
                     </select>
+                    <div class="mixer-info"></div>
                 </div>
 
                 <!-- 10段階の比率リスト -->
@@ -584,9 +586,9 @@ const selectType = document.getElementById('detail-type');
 const selectColorName = document.getElementById('detail-color-name');
 const inputColor = document.getElementById('detail-color');
 const btnAddDetailed = document.getElementById('btn-add-detailed');
-const btnAddQuick = document.getElementById('btn-add-quick'); // クイック追加ボタン
-const inputQuickName = document.getElementById('new-filament-name'); // クイック追加入力
-const inputQuickColor = document.getElementById('new-filament-color'); // クイック追加カラー
+const btnAddQuick = document.getElementById('btn-add-quick'); // 追加ボタン
+const inputQuickName = document.getElementById('new-filament-name'); // 追加・名前
+const inputQuickColor = document.getElementById('new-filament-color'); // 追加・カラー
 const filamentList = document.getElementById('filament-list');
 
 // シミュレーター側のセレクトボックス
@@ -712,7 +714,7 @@ function appendFilamentDOM(name, colorHex) {
     filamentList.appendChild(li);
 }
 
-// 7. 「詳細データで追加」ボタン処理
+// 7. 「DBから追加」ボタン処理
 function addFilamentFromDetails() {
     const maker = selectMaker.value;
     const type = selectType.value;
@@ -732,7 +734,7 @@ function addFilamentFromDetails() {
     selectColorName.selectedIndex = 0; // リセット
 }
 
-// 8. クイック追加ボタンの処理
+// 8. 追加ボタンの処理
 if (btnAddQuick) {
     btnAddQuick.addEventListener('click', () => {
         const name = inputQuickName.value.trim();
@@ -837,50 +839,41 @@ const MIXING_CURVES = {
 
 const ratioListBody = document.getElementById('ratio-list-body');
 const selectCurve = document.getElementById('select-curve'); // カーブ選択要素
+const mixerInfo = document.querySelector('.mixer-info');
 
-/**
- * Hexカラーコード（#ffffff または #fff）をRGBオブジェクトに変換する関数
- */
-function hexToRgb(hex) {
-    if (hex.startsWith('rgb')) {
-        const rgbValues = hex.match(/\d+/g).map(Number);
-        return { r: rgbValues[0], g: rgbValues[1], b: rgbValues[2] };
-    }
-    let c = hex.substring(1);
-    if (c.length === 3) {
-        c = c.split('').map(x => x + x).join('');
-    }
-    const num = parseInt(c, 16);
-    return {
-        r: (num >> 16) & 255,
-        g: (num >> 8) & 255,
-        b: num & 255
-    };
+// 色相差
+function calculateHueDifference(colorA, colorB) {
+    const h1 = colorA.get('hsl.h');
+    const h2 = colorB.get('hsl.h');
+    if (isNaN(h1) || isNaN(h2)) return 0; // 色相が定義されない場合は差を0とする
+
+    let hueDiff = Math.abs(h1 - h2);
+    if (hueDiff > 180) hueDiff = 360 - hueDiff;
+    return hueDiff;
 }
 
-
-/**
- * 中央の混色テーブル（10%刻み・11行）を再計算して描画するメイン関数
- */
-function calculateColorMixing() {
-    const valA = selectColorA.value;
-    const valB = selectColorB.value;
-    const currentCurve = selectCurve ? selectCurve.value : 'Neutral'; // 選択されたカーブ名
-
-    // どちらかのフィラメントが選択されていない場合は待機案内を表示
-    if (!valA || !valB || valA.includes('追加してください') || valB.includes('追加してください')) {
-        ratioListBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">左列からフィラメントを追加して選択してください</td></tr>`;
-        return;
+function calcCurve(currentCurve, hueDiff, lightnessDiff) {
+    let curve = currentCurve;
+    if (currentCurve === 'Auto') {
+        // 自動選択ロジック：色相差と明度差に基づいて最適なカーブを選ぶ
+        if (hueDiff < 20 && lightnessDiff < 10) {
+            // 色相も明度も近い → 鮮やかさ重視のVivid
+            curve = 'Vivid';
+        } else if (hueDiff >= 20 && hueDiff < 90) {
+            // 色相差が中程度 → コントラスト強調のContrast
+            curve = 'Contrast';
+        } else if (hueDiff >= 90) {
+            // 色相差が大きい → 深み重視のDeep
+            curve = 'Deep';
+        } else {
+            // デフォルトはNeutral
+            curve = 'Neutral';
+        }
     }
+    return curve;
+}
 
-    const colorA = chroma(valA);
-    const colorB = chroma(valB);
-    const rgbA = { r: colorA.get('rgb.r'), g: colorA.get('rgb.g'), b: colorA.get('rgb.b') };
-    const rgbB = { r: colorB.get('rgb.r'), g: colorB.get('rgb.g'), b: colorB.get('rgb.b') };
-
-    // 選択されたカーブの配列データを取得
-    const curveData = MIXING_CURVES[currentCurve] || MIXING_CURVES['Neutral'];
-
+function createMixingBarsHtml(colorA, colorB, curveData) {
     let html = '';
 
     // 視覚的なグラデーション位置 100% から 0% まで 10% 刻みでループ処理 (計11段階)
@@ -911,6 +904,41 @@ function calculateColorMixing() {
             </tr>
         `;
     }
+    return html;
+}
+
+/**
+ * 中央の混色テーブル（10%刻み・11行）を再計算して描画するメイン関数
+ */
+function calculateColorMixing() {
+    const valA = selectColorA.value;
+    const valB = selectColorB.value;
+    const currentCurve = selectCurve ? selectCurve.value : 'Auto'; // 選択されたカーブ名
+
+    // どちらかのフィラメントが選択されていない場合は待機案内を表示
+    if (!valA || !valB || valA.includes('追加してください') || valB.includes('追加してください')) {
+        ratioListBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">左列からフィラメントを追加して選択してください</td></tr>`;
+        return;
+    }
+
+    const colorA = chroma(valA);
+    const colorB = chroma(valB);
+
+    // 色相差 & 明度差
+    const hueDiff = calculateHueDifference(colorA, colorB);
+    const lightnessDiff = Math.abs(colorA.get('lab.l') - colorB.get('lab.l'));
+
+    // 選択されたカーブの配列データを取得
+    const curve = calcCurve(currentCurve, hueDiff, lightnessDiff);
+    const curveData = MIXING_CURVES[curve] || MIXING_CURVES['Neutral'];
+
+    mixerInfo.innerHTML = `
+        <p style="margin: 0; font-size: 0.9rem; color: #4a5568;">
+            色相差: ${hueDiff.toFixed(1)}° | 明度差: ${lightnessDiff.toFixed(1)} ${currentCurve === 'Auto' ? '| 選択カーブ: ' + curve : ''}
+        </p>
+    `;
+
+    const html = createMixingBarsHtml(colorA, colorB, curveData);
 
     // テーブルのボディ部分を書き換え
     ratioListBody.innerHTML = html;
