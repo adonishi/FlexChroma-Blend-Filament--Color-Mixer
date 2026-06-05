@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlexChroma Blend Filament Color Mixer</title>
-    <!-- chroma.js の読み込み（軽量なフロントエンド向けCDN） -->
+    <!-- Load chroma.js (lightweight frontend CDN) -->
     <script src="https://unpkg.com/chroma-js/dist/chroma.min.cjs"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,40 +12,33 @@
 
     <header class="app-header">
         <h1>🎨 FlexChroma Blend Filament Color Mixer</h1>
-        <p>2つのフィラメントを混ぜ合わせたときの色と比率を計算します</p>
+        <p>Calculate the resulting color and ratio when blending two filaments.</p>
     </header>
 
     <main class="app-container">
         
-        <!-- 左カラム：フィラメントのリストと追加（旧：右カラム） -->
+        <!-- Left column: filament list and add controls -->
         <section class="column left-column">
-            <!-- 所持フィラメント一覧 -->
+            <!-- Owned filament list -->
             <div class="card">
-                <h2>1. 所持フィラメント</h2>
+                <h2>1. Owned Filaments</h2>
                 <ul class="filament-list" id="filament-list">
                 </ul>
-            <!-- </div> -->
-
-            <!-- 追加方法1：追加 -->
-            <!-- <div class="card"> -->
                 <br/>
-                <h4>➕ 追加</h4>
+                <h4>➕ Add Filament</h4>
                 <div class="add-filament-form compact">
-                    <input type="text" id="new-filament-name" placeholder="フィラメント名 (例: PLA Red)">
+                    <input type="text" id="new-filament-name" placeholder="Filament name (e.g. PLA Red)">
                     <div class="color-picker-group">
                         <input type="color" id="new-filament-color" value="#ff0000">
-                        <button type="button" class="btn-secondary" id="btn-add-quick">追加</button>
+                        <button type="button" class="btn-secondary" id="btn-add-quick">Add</button>
                     </div>
                 </div>
-            <!-- </div> -->
 
-            <!-- 追加方法2：DBから追加 -->
-            <!-- <div class="card"> -->
-                <h4>➕ DBから追加</h4>
+                <h4>➕ Add from Database</h4>
                 <div class="add-filament-form detailed">
-                    <h6 style="color: #718096"><a href="https://github.com/Donkie/SpoolmanDB" target="_blank">SpoolmanDB</a>のデータを使用</h6>
+                    <h6 style="color: #718096"><a href="https://github.com/Donkie/SpoolmanDB" target="_blank">SpoolmanDB</a> data source</h6>
                     <div class="form-group-sub selector-box">
-                        <label for="detail-maker">メーカー名</label>
+                        <label for="detail-maker">Manufacturer</label>
                         <select id="detail-maker">
                             <option value="eSUN">eSUN</option>
                             <option value="Prusament">Prusament</option>
@@ -55,7 +48,7 @@
                         </select>
                     </div>
                     <div class="form-group-sub selector-box">
-                        <label for="detail-type">フィラメント種類</label>
+                        <label for="detail-type">Filament type</label>
                         <select id="detail-type">
                             <option value="PLA">PLA</option>
                             <option value="PETG">PETG</option>
@@ -64,100 +57,93 @@
                         </select>
                     </div>
                     <div class="form-group-sub selector-box">
-                        <label for="detail-color-name">色名</label>
+                        <label for="detail-color-name">Color name</label>
                         <select id="detail-color-name">
-                            <option value="Red">Red (レッド)</option>
-                            <option value="Blue">Blue (ブルー)</option>
-                            <option value="Yellow">Yellow (イエロー)</option>
-                            <option value="White">White (ホワイト)</option>
-                            <option value="Black">Black (ブラック)</option>
-                            <option value="Green">Green (グリーン)</option>
+                            <option value="Red">Red</option>
+                            <option value="Blue">Blue</option>
+                            <option value="Yellow">Yellow</option>
+                            <option value="White">White</option>
+                            <option value="Black">Black</option>
+                            <option value="Green">Green</option>
                         </select>
                     </div>
                     <div class="form-group-sub">
-                        <label for="detail-color">実際の色</label>
+                        <label for="detail-color">Actual color</label>
                         <div class="color-picker-group">
                             <input type="color" id="detail-color" value="#3182ce">
-                            <button type="button" class="btn-secondary" id="btn-add-detailed">DBから追加</button>
+                            <button type="button" class="btn-secondary" id="btn-add-detailed">Add from Database</button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            </div>
         </section>
 
-        <!-- 中央カラム：混色比率リスト（据え置き） -->
+        <!-- Center column: mixing simulation -->
         <section class="column center-column">
             <div class="card">
-                <h2>2. 混色シミュレーション</h2>
+                <h2>2. Color Mixing Simulation</h2>
                 
-                <!-- フィラメント選択エリア -->
+                <!-- Filament selection area -->
                 <div class="mixer-selectors">
                     <div class="selector-box">
-                        <label for="select-color-a"><span class="color-dot filament-a-color-dot" style="background-color: #FFFFFF;"></span> フィラメント A (薄め)</label>
-                        <select id="select-color-a">
-                        </select>
+                        <label for="select-color-a"><span class="color-dot filament-a-color-dot" style="background-color: #FFFFFF;"></span> Filament A (lighter)</label>
+                        <select id="select-color-a"></select>
                     </div>
                     <div class="mixer-vs">×</div>
                     <div class="selector-box">
-                        <label for="select-color-b"><span class="color-dot filament-b-color-dot" style="background-color: #FFFFFF;"></span> フィラメント B (濃いめ)</label>
-                        <select id="select-color-b">
-                        </select>
+                        <label for="select-color-b"><span class="color-dot filament-b-color-dot" style="background-color: #FFFFFF;"></span> Filament B (darker)</label>
+                        <select id="select-color-b"></select>
                     </div>
                 </div>
 
-                <!-- ➕ 【追加】混色カーブ選択プルダウン -->
+                <!-- Mixing curve selector -->
                 <div class="curve-selector-group" style="margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 8px;">
                     <label for="select-curve" style="display: block; font-size: 0.85rem; font-weight: bold; color: #4a5568; margin-bottom: 6px;">
-                        📈 混色カーブ補正
+                        📈 Mixing curve adjustment
                     </label>
                     <select id="select-curve" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background-color: white; font-size: 0.9rem;">
-                        <option value="Auto" selected>Auto (自動)</option>
-                        <option value="Neutral">Neutral (標準・均等ブレンド)</option>
-                        <option value="Vivid">Vivid (鮮やかさ重視)</option>
-                        <option value="Contrast">Contrast (コントラスト強調)</option>
-                        <option value="Deep">Deep (深み・暗色維持)</option>
+                        <option value="Auto" selected>Auto</option>
+                        <option value="Neutral">Neutral (standard blend)</option>
+                        <option value="Vivid">Vivid (vivid)</option>
+                        <option value="Contrast">Contrast (high contrast)</option>
+                        <option value="Deep">Deep (rich/dark)</option>
                     </select>
                     <div class="mixer-info"></div>
                 </div>
 
-                <!-- 10段階の比率リスト -->
-                <div class="ratio-table-wrapper">
-
+                <!-- Ratio table -->
                 <div class="ratio-table-wrapper">
                     <table class="ratio-table">
                         <thead>
                             <tr>
-                                <th>比率 (A : B)</th>
-                                <th>RGB値</th>
-                                <th>仕上がり色</th>
+                                <th>Ratio (A : B)</th>
+                                <th>RGB value</th>
+                                <th>Resulting color</th>
                             </tr>
                         </thead>
-                        <tbody id="ratio-list-body">
-                        </tbody>
+                        <tbody id="ratio-list-body"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 右カラム：設定と出力 -->
+        <!-- Right column: model selection and download -->
         <section class="column right-column">
             <div class="card">
-                <h2>3. FlexChroma モデル・ダウンロード</h2>
+                <h2>3. FlexChroma Model Download</h2>
                 
-                <!-- 🔄 長さ指定をやめて、モデル選択プルダウンに変更 -->
+                <!-- Model selection dropdown -->
                 <div class="form-group">
-                    <label for="select-model">対象フィラメントモデルの選択</label>
+                    <label for="select-model">Choose a filament model</label>
                     <select id="select-model" style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 8px; font-size: 1rem; outline: none; background-color: white;">
-                        <option value="">-- モデルを選択してください --</option>
-                        <optgroup label="Mシリーズ (対応ベッドサイズ: Over 256 x 256)">
+                        <option value="">-- Select a model --</option>
+                        <optgroup label="M Series (bed size: Over 256 x 256)">
                             <option value="M1">M1 Series (24m / 73g)</option>
                             <option value="M2">M2 Series (21.0m / 63g)</option>
                             <option value="M3">M3 Series (18.0m / 53g)</option>
                             <option value="M4">M4 Series (15.0m / 43g)</option>
                         </optgroup>
-                        <optgroup label="Sシリーズ (対応ベッドサイズ: Over 180 x 180)">
+                        <optgroup label="S Series (bed size: Over 180 x 180)">
                             <option value="S1">S1 Series (11m / 33g)</option>
                             <option value="S2">S2 Series (9m / 26g)</option>
                             <option value="S3">S3 Series (6m / 19g)</option>
@@ -166,17 +152,16 @@
                     </select>
                 </div>
                 
-                <!-- ボタンの文言を「ダウンロード」に変更 -->
-                <button type="button" class="btn-primary" id="btn-generate">ダウンロード・ページを開く</button>
+                <button type="button" class="btn-primary" id="btn-generate">Open download page</button>
             </div>
             
             <div class="card info-card">
-                <h3>💡 使い方</h3>
+                <h3>💡 How to use</h3>
                 <ol>
-                    <li>左列で所持フィラメントを管理・追加</li>
-                    <li>中央列で混ぜる2色と混色カーブを選択し、欲しい混色比率を確認</li>
-                    <li>右列でモデルを選択してダウンロード・ページを開く</li>
-                    <li>確認した混色比率に対応する、3MFファイルをダウンロード</li>
+                    <li>Manage and add your owned filaments in the left column.</li>
+                    <li>Choose two colors and a mixing curve in the center column, then review the resulting ratios.</li>
+                    <li>Select a model in the right column and open the download page.</li>
+                    <li>Download the 3MF file that matches your selected blending ratio.</li>
                 </ol>
             </div>
         </section>

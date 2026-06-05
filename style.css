@@ -1,4 +1,4 @@
-/* 全体設定 */
+/* Global styles */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -13,7 +13,7 @@ body {
     padding: 20px;
 }
 
-/* ヘッダー */
+/* Header */
 .app-header {
     text-align: center;
     margin-bottom: 30px;
@@ -30,7 +30,7 @@ body {
     font-size: 0.95rem;
 }
 
-/* 3カラムレイアウト構成 */
+/* Three-column layout */
 .app-container {
     display: flex;
     gap: 20px;
@@ -46,12 +46,12 @@ body {
     gap: 20px;
 }
 
-/* 各列の幅比率調整（中央を少し広く） */
+/* Adjust column width ratios (center wider) */
 .left-column { flex: 0.8; }
 .center-column { flex: 1.4; }
 .right-column { flex: 0.8; }
 
-/* カードデザイン */
+/* Card design */
 .card {
     background: #fff;
     border-radius: 12px;
@@ -86,7 +86,7 @@ body {
     margin-bottom: 5px;
 }
 
-/* フォーム部品 */
+/* Form controls */
 .form-group {
     margin-bottom: 20px;
 }
@@ -126,7 +126,7 @@ body {
     color: #718096;
 }
 
-/* ボタン */
+/* Buttons */
 .btn-primary {
     width: 100%;
     background-color: #3182ce;
@@ -158,7 +158,7 @@ body {
     background-color: #2d3748;
 }
 
-/* 中央：ミキサー選択部分 */
+/* Center: mixer selector area */
 .mixer-selectors {
     display: flex;
     align-items: center;
@@ -194,7 +194,7 @@ body {
     padding-top: 15px;
 }
 
-/* 中央：比率テーブル */
+/* Center: ratio table */
 .ratio-table-wrapper {
     overflow-x: auto;
 }
@@ -237,7 +237,7 @@ body {
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* 右側：フィラメント追加フォーム */
+/* Right side: filament add form */
 .add-filament-form {
     display: flex;
     flex-direction: column;
@@ -271,7 +271,7 @@ body {
     padding: 2px;
 }
 
-/* 右側：フィラメントリスト一覧 */
+/* Right side: filament list */
 .filament-list {
     list-style: none;
     display: flex;
@@ -322,7 +322,7 @@ body {
     background-color: #fee2e2;
 }
 
-/* レスポンシブ対応（画面が狭いときは1列に落とす） */
+/* Responsive layout (stack columns on narrow screens) */
 @media (max-width: 1024px) {
     .app-container {
         flex-direction: column;
