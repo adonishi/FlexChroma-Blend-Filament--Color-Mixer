@@ -306,6 +306,34 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
     return html;
 }
 
+function createMixingBarsHtmlKM(inColorA, inColorB) {
+    const colorA = new spectral.Color(inColorA.hex());
+    const colorB = new spectral.Color(inColorB.hex());
+    const pallet = spectral.palette(colorA, colorB, 10);
+    pallet.push(colorB);
+
+    let html = '';
+
+    pallet.forEach((color, index) => {
+        const visualProgressA = index * 10;
+        const visualProgressB = 100 - visualProgressA;
+        const rgb = color.sRGB;
+        html += `
+            <tr>
+                <td class="ratio-text">
+                    <strong>Position: ${visualProgressA}%</strong> : ${visualProgressB}%
+                    <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
+                    </span>
+                </td>
+                <td class="rgb-text" style="vertical-align: middle;"><code>rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]}) / ${color.toString()}</code></td>
+                <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${color.toString()};"></div></td>
+            </tr>
+        `;
+    });
+
+    return html;
+}
+
 function calculateColorMixing() {
     const valA = selectColorA.value;
     const valB = selectColorB.value;
@@ -330,7 +358,11 @@ function calculateColorMixing() {
     `;
     filamentAColorDot.style.backgroundColor = colorA.hex();
     filamentBColorDot.style.backgroundColor = colorB.hex();
-    ratioListBody.innerHTML = createMixingBarsHtml(colorA, colorB, curveData);
+    if (currentCurve === 'KM') {
+        ratioListBody.innerHTML = createMixingBarsHtmlKM(colorA, colorB);
+    } else {
+        ratioListBody.innerHTML = createMixingBarsHtml(colorA, colorB, curveData);
+    }
 }
 
 // ==========================================
