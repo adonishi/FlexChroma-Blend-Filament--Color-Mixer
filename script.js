@@ -264,17 +264,17 @@ function calculateHueDifference(colorA, colorB) {
     return hueDiff;
 }
 
-function calcCurve(currentCurve, hueDiff, lightnessDiff) {
+function chooseCurve(currentCurve, hueDiff, lightnessDiff) {
     let curve = currentCurve;
     if (currentCurve === 'Auto') {
         if (hueDiff < 20 && lightnessDiff < 10) {
-            curve = 'Vivid';
-        } else if (hueDiff >= 20 && hueDiff < 90) {
+            curve = 'Natural';
+        } else if (lightnessDiff >= 20 && lightnessDiff < 90) {
             curve = 'Contrast';
-        } else if (hueDiff >= 90) {
+        } else if (lightnessDiff >= 90) {
             curve = 'Deep';
         } else {
-            curve = 'Neutral';
+            curve = 'Vivid';
         }
     }
     return curve;
@@ -348,7 +348,7 @@ function calculateColorMixing() {
     const colorB = chroma(valB);
     const hueDiff = calculateHueDifference(colorA, colorB);
     const lightnessDiff = Math.abs(colorA.get('lab.l') - colorB.get('lab.l'));
-    const curve = calcCurve(currentCurve, hueDiff, lightnessDiff);
+    const curve = chooseCurve(currentCurve, hueDiff, lightnessDiff);
     const curveData = MIXING_CURVES[curve] || MIXING_CURVES['Neutral'];
 
     mixerInfo.innerHTML = `
