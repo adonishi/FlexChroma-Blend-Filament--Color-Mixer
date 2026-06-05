@@ -470,61 +470,6 @@ body {
                             </tr>
                         </thead>
                         <tbody id="ratio-list-body">
-                            <tr>
-                                <td class="ratio-text"><strong>100%</strong> : 0%</td>
-                                <td class="rgb-text"><code>rgb(255, 0, 0)</code></td>
-                                <td><div class="color-preview" style="background-color: #ff0000;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>90%</strong> : 10%</td>
-                                <td class="rgb-text"><code>rgb(230, 0, 26)</code></td>
-                                <td><div class="color-preview" style="background-color: #e6001a;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>80%</strong> : 20%</td>
-                                <td class="rgb-text"><code>rgb(204, 0, 51)</code></td>
-                                <td><div class="color-preview" style="background-color: #cc0033;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>70%</strong> : 30%</td>
-                                <td class="rgb-text"><code>rgb(179, 0, 77)</code></td>
-                                <td><div class="color-preview" style="background-color: #b3004d;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>60%</strong> : 40%</td>
-                                <td class="rgb-text"><code>rgb(153, 0, 102)</code></td>
-                                <td><div class="color-preview" style="background-color: #990066;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>50%</strong> : 50%</td>
-                                <td class="rgb-text"><code>rgb(128, 0, 128)</code></td>
-                                <td><div class="color-preview" style="background-color: #800080;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>40%</strong> : 60%</td>
-                                <td class="rgb-text"><code>rgb(102, 0, 153)</code></td>
-                                <td><div class="color-preview" style="background-color: #660099;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>30%</strong> : 70%</td>
-                                <td class="rgb-text"><code>rgb(77, 0, 179)</code></td>
-                                <td><div class="color-preview" style="background-color: #4d00b3;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>20%</strong> : 80%</td>
-                                <td class="rgb-text"><code>rgb(51, 0, 204)</code></td>
-                                <td><div class="color-preview" style="background-color: #3300cc;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text"><strong>10%</strong> : 90%</td>
-                                <td class="rgb-text"><code>rgb(26, 0, 230)</code></td>
-                                <td><div class="color-preview" style="background-color: #1a00e6;"></div></td>
-                            </tr>
-                            <tr>
-                                <td class="ratio-text">0% : <strong>100%</strong></td>
-                                <td class="rgb-text"><code>rgb(0, 0, 255)</code></td>
-                                <td><div class="color-preview" style="background-color: #0000ff;"></div></td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -908,7 +853,7 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
                     <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
                     </span>
                 </td>
-                <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()}</code></td>
+                <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()} / ${blended.hex()}</code></td>
                 <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${blended.hex()};"></div></td>
             </tr>
         `;
