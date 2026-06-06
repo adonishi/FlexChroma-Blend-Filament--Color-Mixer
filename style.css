@@ -82,6 +82,10 @@ body {
     font-size: 0.85rem;
     color: #555;
 }
+.info-card p {
+    font-size: 0.85rem;
+    color: #555;
+}
 .info-card li {
     margin-bottom: 5px;
 }

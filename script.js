@@ -269,10 +269,8 @@ function chooseCurve(currentCurve, hueDiff, lightnessDiff) {
     if (currentCurve === 'Auto') {
         if (hueDiff < 20 && lightnessDiff < 10) {
             curve = 'Natural';
-        } else if (lightnessDiff >= 20 && lightnessDiff < 90) {
+        } else if (lightnessDiff >= 40) {
             curve = 'Contrast';
-        } else if (lightnessDiff >= 90) {
-            curve = 'Deep';
         } else {
             curve = 'Vivid';
         }
