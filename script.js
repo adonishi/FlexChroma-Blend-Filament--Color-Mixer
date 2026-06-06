@@ -268,7 +268,7 @@ function chooseCurve(currentCurve, hueDiff, lightnessDiff) {
     let curve = currentCurve;
     if (currentCurve === 'Auto') {
         if (hueDiff < 20 && lightnessDiff < 10) {
-            curve = 'Natural';
+            curve = 'Neutral';
         } else if (lightnessDiff >= 40) {
             curve = 'Contrast';
         } else {
