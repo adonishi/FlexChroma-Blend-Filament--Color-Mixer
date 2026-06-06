@@ -278,6 +278,15 @@ function chooseCurve(currentCurve, hueDiff, lightnessDiff) {
     return curve;
 }
 
+function addQuickFilament(colorHex, ratioText) {
+    const filamentNameA = selectColorA.options[selectColorA.selectedIndex]?.text || 'Unknown A';
+    const filamentNameB = selectColorB.options[selectColorB.selectedIndex]?.text || 'Unknown B';
+    const name = `${filamentNameA} / ${filamentNameB} - ${ratioText}`;
+    
+    inputQuickName.value = name;
+    inputQuickColor.value = colorHex;
+}
+
 function createMixingBarsHtml(colorA, colorB, curveData) {
     let html = '';
 
@@ -298,6 +307,7 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
                 </td>
                 <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()} / ${blended.hex()}</code></td>
                 <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${blended.hex()};"></div></td>
+                <td style="vertical-align: middle;"><button onclick="addQuickFilament('${blended.hex()}', '${actualPercentA}%')">➕</button></td>
             </tr>
         `;
     }
@@ -325,6 +335,7 @@ function createMixingBarsHtmlKM(inColorA, inColorB) {
                 </td>
                 <td class="rgb-text" style="vertical-align: middle;"><code>rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]}) / ${color.toString()}</code></td>
                 <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${color.toString()};"></div></td>
+                <td style="vertical-align: middle;"><button onclick="addQuickFilament('${color.toString()}', '${visualProgressA}%')">➕</button></td>
             </tr>
         `;
     });
