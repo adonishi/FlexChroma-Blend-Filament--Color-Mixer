@@ -45,6 +45,7 @@ const selectCurve = document.getElementById('select-curve');
 const mixerInfo = document.querySelector('.mixer-info');
 const selectModel = document.getElementById('select-model');
 const btnGenerate = document.getElementById('btn-generate');
+const resultContainer = document.getElementById('result-container');
 
 async function init() {
     loadFilamentsFromStorage();
@@ -302,13 +303,25 @@ function chooseCurve(currentCurve, hueDiff, lightnessDiff) {
     return curve;
 }
 
-function addQuickFilament(colorHex, ratioText) {
+function selectMix(blendedHex, ratio) {
     const filamentNameA = selectColorA.options[selectColorA.selectedIndex]?.text || 'Unknown A';
     const filamentNameB = selectColorB.options[selectColorB.selectedIndex]?.text || 'Unknown B';
-    const name = `${filamentNameA} / ${filamentNameB} - ${ratioText}`;
+    const filamentColorA = selectColorA.value || '#ffffff';
+    const filamentColorB = selectColorB.value || '#ffffff';
+    const name = `${filamentNameA} / ${filamentNameB} - ${ratio}%`;
+    const downloadRatio = (ratio > 50) ? ratio : 100 - ratio;
     
     inputQuickName.value = name;
-    inputQuickColor.value = colorHex;
+    inputQuickColor.value = blendedHex;
+    resultContainer.innerHTML = `
+        <p>A: ${filamentNameA}</p>
+        <div class="color-preview" style="background-color: ${filamentColorA};"></div>
+        <p>B: ${filamentNameB}</p>
+        <p><div class="color-preview" style="background-color: ${filamentColorB};"></div></p>
+        <p>mix: ${ratio}%</p>
+        <p><div class="color-preview" style="background-color: ${blendedHex};"></div></p>
+        <p>please download 3MF for <strong>${downloadRatio}% mix</strong></p>
+    `;
 }
 
 function createMixingBarsHtml(colorA, colorB, curveData) {
@@ -331,7 +344,7 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
                 </td>
                 <td class="rgb-text" style="vertical-align: middle;"><code>${blended.css()} / ${blended.hex()}</code></td>
                 <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${blended.hex()};"></div></td>
-                <td style="vertical-align: middle;"><button onclick="addQuickFilament('${blended.hex()}', '${actualPercentA}%')">➕</button></td>
+                <td style="vertical-align: middle;"><button onclick="selectMix('${blended.hex()}', ${visualProgressA})">➕</button></td>
             </tr>
         `;
     }
@@ -359,7 +372,7 @@ function createMixingBarsHtmlKM(inColorA, inColorB) {
                 </td>
                 <td class="rgb-text" style="vertical-align: middle;"><code>rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]}) / ${color.toString()}</code></td>
                 <td style="vertical-align: middle;"><div class="color-preview" style="background-color: ${color.toString()};"></div></td>
-                <td style="vertical-align: middle;"><button onclick="addQuickFilament('${color.toString()}', '${visualProgressA}%')">➕</button></td>
+                <td style="vertical-align: middle;"><button onclick="selectMix('${color.toString()}', ${visualProgressA})">➕</button></td>
             </tr>
         `;
     });

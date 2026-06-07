@@ -13,7 +13,7 @@ this Color Mixer help to use any filament for FlexChroma.
 ### usage
 * Manage and add your owned filaments in the left column.
 * Choose two colors and a mixing curve in the center column, then review the resulting ratios.
-* [Optional] Add the resulting mix as a new Owned Filament using the "➕" button.
+* [Optional] Add the resulting mix as a new Owned Filament.
 * Select a model in the right column and open the download page.
 * Download the 3MF file that matches your selected blending ratio.
 
