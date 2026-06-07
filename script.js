@@ -1,6 +1,7 @@
 // SpoolmanDB unified JSON URL
 const JSON_URL = 'https://donkie.github.io/SpoolmanDB/filaments.json';
 const STORAGE_KEY = 'my_owned_filaments';
+const LAST_SELECTED_MODEL_KEY = 'last_selected_model';
 
 // Mixing curve adjustment data
 // Maps visual gradient positions (0%–100%) to the actual filament A mix ratio
@@ -221,10 +222,33 @@ function loadFilamentsFromStorage() {
         }
     }
 
-    updateMixerSelectors();
+    updateMixerSelectors(false);
+    loadLastSelectedModel();
+    calculateColorMixing(false);
 }
 
-function updateMixerSelectors() {
+function saveLastSelectedModel() {
+    const lastSelectedModel = {
+        colorA: selectColorA.value,
+        colorB: selectColorB.value
+    };
+    localStorage.setItem(LAST_SELECTED_MODEL_KEY, JSON.stringify(lastSelectedModel));
+}
+
+function loadLastSelectedModel() {
+    const storedModel = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+    if (storedModel) {
+        try {
+            const { colorA, colorB } = JSON.parse(storedModel);
+            if (colorA) selectColorA.value = colorA;
+            if (colorB) selectColorB.value = colorB;
+        } catch (e) {
+            console.error('Failed to parse last selected model:', e);
+        }
+    }
+}
+
+function updateMixerSelectors(isSaveSelection = true) {
     const items = filamentList.querySelectorAll('.filament-item');
     let optionsHtml = '';
 
@@ -247,7 +271,7 @@ function updateMixerSelectors() {
     if (currentA) selectColorA.value = currentA;
     if (currentB) selectColorB.value = currentB;
 
-    calculateColorMixing();
+    calculateColorMixing(isSaveSelection);
 }
 
 // ==========================================
@@ -343,7 +367,7 @@ function createMixingBarsHtmlKM(inColorA, inColorB) {
     return html;
 }
 
-function calculateColorMixing() {
+function calculateColorMixing(isSaveSelection = true) {
     const valA = selectColorA.value;
     const valB = selectColorB.value;
     const currentCurve = selectCurve ? selectCurve.value : 'Auto';
@@ -371,6 +395,10 @@ function calculateColorMixing() {
         ratioListBody.innerHTML = createMixingBarsHtmlKM(colorA, colorB);
     } else {
         ratioListBody.innerHTML = createMixingBarsHtml(colorA, colorB, curveData);
+    }
+
+    if (isSaveSelection) {
+        saveLastSelectedModel();
     }
 }
 
@@ -405,4 +433,3 @@ selectCurve.addEventListener('change', calculateColorMixing);
 btnGenerate.addEventListener('click', handleDownload);
 
 init();
-calculateColorMixing();
