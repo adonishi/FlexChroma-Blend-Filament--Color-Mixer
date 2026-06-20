@@ -4,7 +4,7 @@ go to site: [FlexChroma Blend Filament - Color Mixer](https://adonishi.github.io
 
 ### Background
 Color mixing/blending filament for 3D printing is a technique to mix multiple colored filaments to create new filaments (then use them again in a 3D printer).
-There are some color mixing filaments out there. Among them, I think [FlexChroma Blend Filament](https://makerworld.com/en/models/2579268-flexchroma-blend-filament-index) is a step better, because...
+There are some color mixing filaments out there. Among them, I think [FlexChroma Blend Filament](https://makerworld.com/en/models/2579268-flexchroma-blend-filament-index) is a step better, because of structure of colors in filament and existance of measured accurate color chart.
 
 but there is a problem: it only supports specified filaments (namely Bambulab's basic filaments).
 
