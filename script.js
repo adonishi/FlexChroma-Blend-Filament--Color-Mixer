@@ -309,18 +309,25 @@ function selectMix(blendedHex, ratio) {
     const filamentColorA = selectColorA.value || '#ffffff';
     const filamentColorB = selectColorB.value || '#ffffff';
     const name = `${filamentNameA} / ${filamentNameB} - ${ratio}%`;
-    const downloadRatio = (ratio > 50) ? ratio : 100 - ratio;
+    const isFlipRatio = ratio < 50;
+    const downloadRatio = !isFlipRatio ? ratio : 100 - ratio;
     
     inputQuickName.value = name;
     inputQuickColor.value = blendedHex;
     resultContainer.innerHTML = `
-        <p>A: ${filamentNameA}</p>
+        <p>A: ${filamentNameA} ${ratio}%</p>
         <div class="color-preview" style="background-color: ${filamentColorA};"></div>
-        <p>B: ${filamentNameB}</p>
+        <p>B: ${filamentNameB} ${100 - ratio}%</p>
         <p><div class="color-preview" style="background-color: ${filamentColorB};"></div></p>
-        <p>mix: ${ratio}%</p>
+        <p>mix: ${ratio}% - ${100 - ratio}%</p>
         <p><div class="color-preview" style="background-color: ${blendedHex};"></div></p>
-        <p>please download 3MF for <strong>${downloadRatio}% mix</strong></p>
+        <p><ol style="margin: 20px;">
+            <li>choose a model from the dropdown below & open download page</li>
+            <li>download 3MF which include <strong>${downloadRatio}% mix</strong></li>
+            <li>and select the plate for ${downloadRatio}%(pct). then slice & print with ...</li>
+            <li>  Blue(${ratio}%) -> ${!isFlipRatio ? filamentNameA : filamentNameB} </li>
+            <li>  Yellow(${100 - ratio}%) -> ${!isFlipRatio ? filamentNameB : filamentNameA} </li>
+        </ol></p>
     `;
 }
 
@@ -338,7 +345,7 @@ function createMixingBarsHtml(colorA, colorB, curveData) {
         html += `
             <tr>
                 <td class="ratio-text">
-                    <strong>Position: ${visualProgressA}%</strong> : ${visualProgressB}%
+                    <strong>${visualProgressA}%</strong> : ${visualProgressB}%
                     <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
                     </span>
                 </td>
@@ -360,13 +367,13 @@ function createMixingBarsHtmlKM(inColorA, inColorB) {
     let html = '';
 
     pallet.forEach((color, index) => {
-        const visualProgressA = index * 10;
-        const visualProgressB = 100 - visualProgressA;
+        const visualProgressB = index * 10;
+        const visualProgressA = 100 - visualProgressB;
         const rgb = color.sRGB;
         html += `
             <tr>
                 <td class="ratio-text">
-                    <strong>Position: ${visualProgressA}%</strong> : ${visualProgressB}%
+                    <strong>${visualProgressA}%</strong> : ${visualProgressB}%
                     <span style="display:block; font-size:0.75rem; color:#64748b; margin-top:2px;">
                     </span>
                 </td>
